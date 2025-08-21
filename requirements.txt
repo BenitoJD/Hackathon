@@ -1,0 +1,14 @@
+streamlit
+langchain
+langchain-openai
+langchain-community
+ollama
+sentence-transformers
+faiss-cpu
+pydub
+speechrecognition
+streamlit-mic-recorder
+pandas
+plotly
+pillow
+python-dotenv
