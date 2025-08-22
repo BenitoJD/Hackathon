@@ -9,9 +9,8 @@ import numpy as np
 import time
 import shutil
 
-# --- NEW IMPORTS FOR DOCUMENT PROCESSING ---
 try:
-    import fitz  # PyMuPDF
+    import fitz  
     PYMUPDF_AVAILABLE = True
 except ImportError:
     PYMUPDF_AVAILABLE = False
@@ -21,9 +20,7 @@ try:
     DOCX_AVAILABLE = True
 except ImportError:
     DOCX_AVAILABLE = False
-# --- END NEW IMPORTS ---
 
-# LangChain components
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_community.chat_models import ChatOllama
 from langchain_community.embeddings import HuggingFaceEmbeddings
@@ -31,7 +28,6 @@ from langchain_community.vectorstores import Chroma
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_core.messages import HumanMessage, SystemMessage
 
-# Audio processing
 try:
     from streamlit_mic_recorder import mic_recorder
     MIC_RECORDER_AVAILABLE = True
@@ -40,7 +36,6 @@ except ImportError:
 
 import speech_recognition as sr
 
-# Whisper imports
 try:
     import openai
     OPENAI_AVAILABLE = True
@@ -55,7 +50,6 @@ try:
 except ImportError:
     HF_WHISPER_AVAILABLE = False
 
-# --- PAGE CONFIGURATION ---
 st.set_page_config(
     page_title="Multimodal AI Orchestrator",
     page_icon="🧠",
@@ -63,10 +57,8 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Load environment variables (for OpenAI API key)
 load_dotenv()
 
-# --- CUSTOM CSS ---
 st.markdown("""
 <style>
     .main-header {
@@ -112,7 +104,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-# --- NEW HELPER FUNCTION FOR TEXT EXTRACTION ---
 def extract_text_from_file(uploaded_file):
     """Extracts text from various file formats."""
     file_extension = os.path.splitext(uploaded_file.name)[1].lower()
@@ -147,7 +138,6 @@ def extract_text_from_file(uploaded_file):
         st.warning(f"Unsupported file format: {file_extension}. Skipping {uploaded_file.name}.")
         return None
 
-# --- CORE CLASSES (ModelManager and VoiceProcessor are unchanged) ---
 
 class ModelManager:
     """ Manages connections and interactions with different LLMs. """
@@ -162,7 +152,8 @@ class ModelManager:
         try:
             import ollama
             models_info = ollama.list().get('models', [])
-            return [model['name'] for model in models_info]
+            print(f"Found {len(models_info)} Ollama models.")
+            return [m.model for m in models_info]                
         except Exception:
             return []
 
@@ -271,7 +262,7 @@ class KnowledgeRetriever:
             st.error(f"❌ Failed to build knowledge base: {e}")
             return False
 
-    def retrieve(self, query, k=3):
+    def retrieve(self, query, k=10):
         """Retrieve relevant documents with error handling."""
         if not self.vector_store and os.path.exists(self.persist_directory) and st.session_state.model_manager.embedding_model:
             self.vector_store = Chroma(persist_directory=self.persist_directory, embedding_function=st.session_state.model_manager.embedding_model)
